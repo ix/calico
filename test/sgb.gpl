@@ -1,0 +1,8 @@
+GIMP Palette
+#Palette Name: Pokemon (SGB)
+#Description: A palette used by <a href="https://en.wikipedia.org/wiki/Pok%C3%A9mon_Red_and_Blue">Pokemon Red and Blue</a> for certain elements when played on the <a href="https://en.wikipedia.org/wiki/Game_Boy_Color">Gameboy Color</a> or <a href="https://en.wikipedia.org/wiki/Super_Game_Boy">Super Gameboy</a>.
+#Colors: 4
+24	16	16	Black
+132	115	156 Purple 
+247	181	140	Orange
+255	239	255	White

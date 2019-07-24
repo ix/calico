@@ -1,5 +1,5 @@
 name:                calico 
-version:             0.1.0.0
+version:             0.1.1.0
 github:              "ix/calico"
 license:             BSD3
 author:              "Rose"
@@ -22,6 +22,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - parsec >= 3.1.13 && < 3.2
+- optparse-applicative >= 0.14.3 && < 0.15
 
 library:
   source-dirs: src
