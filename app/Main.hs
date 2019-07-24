@@ -97,14 +97,14 @@ main = do
 opts :: O.Parser Options
 opts = do
   filename <- O.strOption (O.short 'f' <> O.long "filename" <> O.value "-")
-  inline <- O.switch (O.short 'i' <> O.long "inline")
-  list   <- O.switch (O.short 'l' <> O.long "list")
-  grid   <- O.switch (O.short 'g' <> O.long "grid")
-  hex    <- O.switch (O.short 'x' <> O.long "hex")
-  fmt    <- O.strOption (O.short 'f' <> O.long "format" <> O.value "cnrhx")
-  gridColumns <- O.option O.auto (O.short 'n' <> O.long "grid-columns" <> O.value 5)
-  gridSize <- O.option O.auto (O.short 's' <> O.long "grid-size" <> O.value 2)
-  commands <- O.strOption (O.short 'm' <> O.long "modify" <> O.value "")
+  inline <- O.switch (O.short 'i' <> O.long "inline" <> O.help "display the palette in a single line")
+  list   <- O.switch (O.short 'l' <> O.long "list" <> O.help "display the palette as a list")
+  grid   <- O.switch (O.short 'g' <> O.long "grid" <> O.help "display the palette as a grid")
+  hex    <- O.switch (O.short 'x' <> O.long "hex" <> O.help "display a list of hex colors only")
+  fmt    <- O.strOption (O.short 'f' <> O.long "format" <> O.value "cnrhx" <> O.help "the format string for --list")
+  gridColumns <- O.option O.auto (O.short 'n' <> O.long "grid-columns" <> O.value 5 <> O.help "the number of color columns to use with --grid")
+  gridSize <- O.option O.auto (O.short 's' <> O.long "grid-size" <> O.value 2 <> O.help "the size of individual colors to use with --grid")
+  commands <- O.strOption (O.short 'm' <> O.long "modify" <> O.value "" <> O.help "a list of color modification commands")
   pure Options {..}
 
 -- | It's just map flipped™️.

@@ -12,6 +12,10 @@ It also features a primitive command language for modifying the hue, saturation 
 
 On my machine at least, there are no gaps between the lines in the grid view.
 
+# Bash, Fish and Zsh completion
+Thanks to `optparse-applicative`, calico can automatically generate completion scripts for various shells.
+Instructions can be found [here](https://github.com/pcapriotti/optparse-applicative#bash-zsh-and-fish-completions) and require minimal effort on the user's part.
+
 # Motivations
 
 `calico` was born out of a frustration with having to open a full image editor
