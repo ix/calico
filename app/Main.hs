@@ -96,7 +96,7 @@ main = do
 -- | optparse-applicative option parser.
 opts :: O.Parser Options
 opts = do
-  filename <- O.strOption (O.short 'f' <> O.long "filename")
+  filename <- O.strOption (O.short 'f' <> O.long "filename" <> O.value "-")
   inline <- O.switch (O.short 'i' <> O.long "inline")
   list   <- O.switch (O.short 'l' <> O.long "list")
   grid   <- O.switch (O.short 'g' <> O.long "grid")
