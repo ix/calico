@@ -24,8 +24,21 @@ header = do
   return ()
 
 -- | A number, or >= 1 digit sequentially.
-number :: Parser String
-number = many1 digit
+number :: Parser Integer 
+number = read <$> many1 digit
+
+-- | A sign for use in a signed integer.
+sign :: Parser Char
+sign = char '-' <|> char '+'
+
+-- | A signed integer, with a mandatory +.
+signedNumber :: Parser Integer
+signedNumber = do
+  s <- sign
+  num <- number 
+  return $ case s of
+    '+' -> num
+    '-' -> -num
 
 -- | A space or tab character.
 whitespace :: Parser Char
@@ -50,11 +63,11 @@ metadataLine = do
 colorLine :: Parser GPLColor
 colorLine = do
   skipMany whitespace
-  r <- read <$> number
+  r <- fromIntegral <$> number
   skipMany whitespace
-  g <- read <$> number
+  g <- fromIntegral <$> number
   skipMany whitespace
-  b <- read <$> number
+  b <- fromIntegral <$> number
   many whitespace
   -- in the case of RGBA
   optional $ do

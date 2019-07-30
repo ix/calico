@@ -33,20 +33,6 @@ data Options = Options { filename    :: String
 data Command = Hue Integer | Saturation Integer | Luminosity Integer
   deriving (Read, Show, Eq)
 
-
--- | A sign for use in a signed integer.
-sign :: Parser Char
-sign = char '-' <|> char '+'
-
--- | A signed integer, with a mandatory +.
-signedNumber :: Parser Integer
-signedNumber = do
-  s <- sign
-  num <- read <$> many1 digit
-  return $ case s of
-    '+' -> num
-    '-' -> -num
-
 -- | Any valid separator character of space, semicolon, EOL or comma.
 seperator :: Parser Char
 seperator = char ' ' <|> char ';' <|> char ',' <|> endOfLine
