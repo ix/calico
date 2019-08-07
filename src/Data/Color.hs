@@ -9,7 +9,7 @@ import           Text.Printf
 data RGB = RGB Word8 Word8 Word8
   deriving (Read, Eq, Ord)
 
-data Degrees = Degrees Integer
+newtype Degrees = Degrees Integer
   deriving (Read, Eq, Ord)
 
 -- | A HSL (Hue, Saturation, Luminosity) representation of a color.
@@ -35,12 +35,12 @@ class Color a where
 instance Color RGB where
   toHex (RGB r g b) = mconcat ["#", printf "%02X" r, printf "%02X" g, printf "%02X" b]
   prints (RGB r g b) str = mconcat [esc, "[38;2;", r', ";", g', ";", b', "m", str, esc, "[0m"]
-      where esc  = chr 0x1B : []
+      where esc  = [chr 0x1B]
             (r', g', b') = (show r, show g, show b)
 
 instance Color HSL where
   toHex hsl = toHex $ hsl2rgb hsl
-  prints hsl str = prints (hsl2rgb hsl) str
+  prints hsl = prints (hsl2rgb hsl)
 
 -- | A smart constructor which cyclicly handles degrees.
 deg :: Integer -> Degrees
@@ -52,9 +52,9 @@ deg n
 -- | Converts an RGB value to a HSL one.
 rgb2hsl :: RGB -> HSL
 rgb2hsl (RGB red green blue) = HSL (deg $ round hue) (sat * 100) (lum * 100)
-  where r'    = (fromIntegral $ red) / 255
-        g'    = (fromIntegral $ green) / 255
-        b'    = (fromIntegral $ blue) / 255
+  where r'    = fromIntegral red / 255
+        g'    = fromIntegral green / 255
+        b'    = fromIntegral blue / 255
         cMax  = maximum [r', g', b']
         cMin  = minimum [r', g', b']
         delta = cMax - cMin
@@ -66,17 +66,17 @@ rgb2hsl (RGB red green blue) = HSL (deg $ round hue) (sat * 100) (lum * 100)
           | cMax  == b' = 60.0 * (4 + (r' - g') / delta)
         sat
           | delta == 0  = 0
-          | otherwise   = delta / (1 - (abs $ 2 * lum - 1))
+          | otherwise   = delta / (1 - abs (2 * lum - 1))
 
 -- | Converts a HSL value to an RGB one.
 hsl2rgb :: HSL -> RGB
 hsl2rgb (HSL (Degrees hue) sat lum) = RGB r g b
   where
-        h = (fromIntegral hue) / 60
+        h = fromIntegral hue / 60
         s = sat / 100
         l = lum / 100
-        c  = (1 - (abs $ 2 * l - 1)) * s
-        x  = c * (1 - (abs $ h `mod'` 2 - 1))
+        c  = (1 - abs (2 * l - 1)) * s
+        x  = c * (1 - abs (h `mod'` 2 - 1))
         m = l - c / 2
         (r', g', b')
           | h >= 0 && h <= 1  = (c, x, 0)
