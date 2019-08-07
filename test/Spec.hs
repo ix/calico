@@ -1,5 +1,5 @@
 import           Data.Color
-import           Data.Color.GPL
+import           Data.Color.Parsers
 import           Data.Either
 import           Data.Word
 import           Test.Hspec

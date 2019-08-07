@@ -1,4 +1,4 @@
-module Data.Color.GPL where
+module Data.Color.Parsers where
 
 import           Control.Monad.IO.Class
 import           Data.Color

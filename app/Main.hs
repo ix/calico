@@ -1,12 +1,11 @@
 {-# LANGUAGE ApplicativeDo   #-}
-{-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE MultiWayIf      #-}
 {-# LANGUAGE RecordWildCards #-}
 module Main where
 
 import           Control.Monad
 import           Data.Color
-import           Data.Color.GPL
+import           Data.Color.Parsers
 import           Data.Either         (fromRight)
 import           Data.List
 import           Data.Semigroup      ((<>))
@@ -68,7 +67,7 @@ main = do
                      else return $ transform cmds <$> parseResult
 
   case preparedPalette of
-    Right palette -> do
+    Right palette ->
       if | inline options -> printInline palette
          | list options   -> printFormatted palette (fmt options)
          | grid options   -> printGrid (gridColumns options) (gridSize options) palette
@@ -113,7 +112,7 @@ modify cmd rgb =
 
 -- | Get a colored square of arbitrary size.
 displayX :: Color a => Int -> a -> String
-displayX n clr = prints clr $ concat $ take n $ repeat "██"
+displayX n clr = prints clr $ concat $ replicate n "██"
 
 -- | Convenience function for displayX that returns a single square.
 display :: Color a => a -> String
@@ -127,15 +126,15 @@ printInline palette = do
 
 -- | Print all colors in a palette in a grid, with `count` columns of squares `size` in diameter.
 printGrid :: Int -> Int -> Palette -> IO ()
-printGrid count size palette = do
-     forM_ (chunksOf count $ colors palette) $ \row -> do
-       putStrLn $ unlines $ take size $ repeat $ intercalate " " $ map (displayX size . color) row
+printGrid count size palette =
+     forM_ (chunksOf count $ colors palette) $ \row -> 
+      putStrLn $ unlines $ replicate size $ unwords $ map (displayX size . color) row
 
 -- | Print the colors in a palette in a formatted list.
 printFormatted :: Palette -> String -> IO ()
-printFormatted palette fmt = do
-  forM_ (colors palette) $ \col@(GPLColor c n) -> do
-    putStrLn $ concat $ intersperse " " $ map (formatter col) fmt
+printFormatted palette fmt =
+  forM_ (colors palette) $ \col@(GPLColor c n) ->
+  putStrLn $ unwords $ map (formatter col) fmt
   where
     formatter col 'c' = display (color col)
     formatter col 'n' = name col
@@ -146,6 +145,6 @@ printFormatted palette fmt = do
 
 -- | Split a list into chunks.
 chunksOf :: Int -> [a] -> [[a]]
-chunksOf n xs = go [] n xs
+chunksOf = go []
   where go accum n [] = reverse accum
         go accum n xs = go (take n xs : accum) n (drop n xs)
