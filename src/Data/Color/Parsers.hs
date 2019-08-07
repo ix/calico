@@ -4,24 +4,42 @@ import           Control.Monad.IO.Class
 import           Data.Color
 import           Text.Parsec
 import           Text.Parsec.Char
+import           Data.Word
+import           Numeric                        ( readHex )
 import           Text.Parsec.String
 
--- | A named color as they'd appear in a .gpl file.
-data GPLColor = GPLColor { color :: RGB
-                         , name  :: String }
-                         deriving (Read, Show, Eq)
+-- A generic color type with an optional name.
+data Entry = Entry { color :: RGB
+                   , name  :: Maybe String }
+                   deriving (Read, Show, Eq)
 
 -- | Representation of a .gpl file - a collection of colors and metadata.
-data Palette = Palette { colors   :: [GPLColor]
+data Palette = Palette { colors   :: [Entry]
                        , metadata :: [(String, String)] }
                        deriving (Read, Show, Eq)
 
--- | Parser for the header constant.
+-- | Parser for the .gpl header constant.
 header :: Parser ()
 header = do
   string "GIMP Palette"
   endOfLine
   return ()
+
+-- | A pair of hex digits (e.g. FF).
+hexWord8 :: Parser Word8
+hexWord8 = do
+  a <- hexDigit  
+  b <- hexDigit
+  return $ fst . head $ readHex [a, b]
+
+-- | A hex color. Doesn't support single character color components.
+hexColor :: Parser Entry
+hexColor = do
+  optional $ char '#'
+  r <- hexWord8
+  g <- hexWord8
+  b <- hexWord8
+  return Entry { color = RGB r g b, name = Nothing }
 
 -- | A number, or >= 1 digit sequentially.
 number :: Parser Integer 
@@ -59,8 +77,8 @@ metadataLine = do
   value <- manyTill anyChar endOfLine
   return (key, value)
 
--- | A named (RGB) color entry.
-colorLine :: Parser GPLColor
+-- | A color entry.
+colorLine :: Parser Entry 
 colorLine = do
   skipMany whitespace
   r <- fromIntegral <$> number
@@ -74,7 +92,7 @@ colorLine = do
     number
     many whitespace
   name <- manyTill anyChar endOfLine
-  return $ GPLColor { color = RGB r g b, name = name }
+  return $ Entry { color = RGB r g b, name = Just name }
 
 -- | A .gpl palette parser.
 palette :: Parser Palette
@@ -85,6 +103,12 @@ palette = do
   cols <- many $ try colorLine
   eof
   return $ Palette { colors = cols, metadata = md }
+
+-- | A hex color list palette parser.
+hexList :: Parser Palette
+hexList = do
+  colors <- try $ hexColor `sepEndBy1` endOfLine 
+  return Palette { colors = colors, metadata = [] }
 
 -- | A convenience function to parse a .gpl palette from a file.
 parseGPLFile :: FilePath -> IO (Either ParseError Palette)

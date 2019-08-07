@@ -6,14 +6,15 @@ module Main where
 import           Control.Monad
 import           Data.Color
 import           Data.Color.Parsers
-import           Data.Either         (fromRight)
+import           Data.Either                    ( fromRight )
 import           Data.List
-import           Data.Semigroup      ((<>))
-import qualified Options.Applicative as O
-import           System.Environment  (getArgs)
+import           Data.Semigroup                 ( (<>) )
+import qualified Options.Applicative           as O
+import           System.Environment             ( getArgs )
 import           Text.Parsec
 import           Text.Parsec.Char
 import           Text.Parsec.String
+import           Data.Maybe
 import           Text.Printf
 
 -- | The command line option state used by optparse-applicative.
@@ -53,7 +54,7 @@ command = do
 main :: IO ()
 main = do
   options <- O.execParser (O.info (O.helper <*> opts) O.idm)
-  parseResult <- if | (filename options) == "-" -> parse palette "stdin" <$> getContents
+  parseResult <- if | filename options == "-" -> parse palette "stdin" <$> getContents
                     | otherwise                 -> parseGPLFile (filename options)
 
   cmds <- if null $ commands options
@@ -63,7 +64,7 @@ main = do
               return $ fromRight [] c
 
   preparedPalette <- if null $ commands options
-                     then return $ parseResult
+                     then return parseResult
                      else return $ transform cmds <$> parseResult
 
   case preparedPalette of
@@ -99,7 +100,7 @@ for = flip map
 -- | Apply a series of commands to all colors in a palette. 
 transform :: [Command] -> Palette -> Palette
 transform cmds palette = Palette { metadata = metadata palette, colors = newColors }
-  where newColors = for (colors palette) $ \(GPLColor rgb n) -> GPLColor (foldr modify rgb cmds) n
+  where newColors = for (colors palette) $ \(Entry rgb n) -> Entry (foldr modify rgb cmds) n
 
 -- | Apply a HSL command to an RGB color.
 modify :: Command -> RGB -> RGB
@@ -121,23 +122,23 @@ display = displayX 1
 -- | Print all colors in a palette inline.
 printInline :: Palette -> IO ()
 printInline palette = do
-      forM_ (colors palette) $ \(GPLColor c _) -> printf "%s" $ display c
+      forM_ (colors palette) $ \(Entry c _) -> printf "%s" $ display c
       printf "\n"
 
 -- | Print all colors in a palette in a grid, with `count` columns of squares `size` in diameter.
 printGrid :: Int -> Int -> Palette -> IO ()
 printGrid count size palette =
-     forM_ (chunksOf count $ colors palette) $ \row -> 
+     forM_ (chunksOf count $ colors palette) $ \row ->
       putStrLn $ unlines $ replicate size $ unwords $ map (displayX size . color) row
 
 -- | Print the colors in a palette in a formatted list.
 printFormatted :: Palette -> String -> IO ()
 printFormatted palette fmt =
-  forM_ (colors palette) $ \col@(GPLColor c n) ->
+  forM_ (colors palette) $ \col@(Entry c n) ->
   putStrLn $ unwords $ map (formatter col) fmt
   where
     formatter col 'c' = display (color col)
-    formatter col 'n' = name col
+    formatter col 'n' = fromMaybe "Untitled" (name col)
     formatter col 'r' = show $ color col
     formatter col 'h' = show $ rgb2hsl $ color col
     formatter col 'x' = toHex $ color col
