@@ -66,16 +66,16 @@ main = do
     describe "Data.Color.GPL.number" $ do
       it "parses integers correctly" $ do
         quickCheck (withMaxSuccess 10000 prop_parses_number)
-    describe "Data.Color.GPL.palette" $ do
+    describe "Data.Color.GPL.gpl" $ do
       it "parses a palette correctly" $ do
         let paldata = "GIMP Palette\n0 0 0 Untitled\n"
-        isRight (parse palette "Test #1" paldata) `shouldBe` True
+        isRight (parse gpl "Test #1" paldata) `shouldBe` True
       it "ignores comments correctly" $ do
         let paldata = "GIMP Palette\n# Comment\n # Another comment\n0 0 0 Test\n"
-        isRight (parse palette "Test #2" paldata) `shouldBe` True
+        isRight (parse gpl "Test #2" paldata) `shouldBe` True
       it "parses metadata correctly" $ do
         let paldata = "GIMP Palette\n# Comment\nColors: RGBA\n255 255 255 Untitled\n"
-        isRight (parse palette "Test #3" paldata) `shouldBe` True
+        isRight (parse gpl "Test #3" paldata) `shouldBe` True
     describe "Data.Color.GPL.signedNumber" $ do
       it "parses mandatorily signed integers correctly" $ do
         quickCheck (withMaxSuccess 10000 prop_parses_signed)

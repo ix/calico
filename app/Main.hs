@@ -54,8 +54,8 @@ command = do
 main :: IO ()
 main = do
   options <- O.execParser (O.info (O.helper <*> opts) O.idm)
-  parseResult <- if | filename options == "-" -> parse palette "stdin" <$> getContents
-                    | otherwise                 -> parseGPLFile (filename options)
+  parseResult <- if | filename options == "-" -> parse (gpl <|> hexList) "stdin" <$> getContents
+                    | otherwise               -> parseFile (filename options)
 
   cmds <- if null $ commands options
           then return []

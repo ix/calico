@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 module Data.Color.Parsers where
 
 import           Control.Monad.IO.Class
@@ -19,11 +20,8 @@ data Palette = Palette { colors   :: [Entry]
                        deriving (Read, Show, Eq)
 
 -- | Parser for the .gpl header constant.
-header :: Parser ()
-header = do
-  string "GIMP Palette"
-  endOfLine
-  return ()
+header :: Parser String
+header = string "GIMP Palette"
 
 -- | A pair of hex digits (e.g. FF).
 hexWord8 :: Parser Word8
@@ -67,7 +65,7 @@ commentLine :: Parser ()
 commentLine = do
   skipMany whitespace
   char '#'
-  manyTill anyChar endOfLine
+  many (alphaNum <|> whitespace)
   return ()
 
 -- | A metadata key/value line.
@@ -86,23 +84,23 @@ colorLine = do
   g <- fromIntegral <$> number
   skipMany whitespace
   b <- fromIntegral <$> number
-  many whitespace
+  skipMany whitespace
   -- in the case of RGBA
   optional $ do
     number
-    many whitespace
-  name <- manyTill anyChar endOfLine
+    skipMany whitespace
+  name <- many1 (alphaNum <|> whitespace)
   return $ Entry { color = RGB r g b, name = Just name }
 
 -- | A .gpl palette parser.
-palette :: Parser Palette
-palette = do
+gpl :: Parser Palette
+gpl = do
   header
-  md <- many $ try metadataLine
-  skipMany $ try commentLine
-  cols <- many $ try colorLine
-  eof
-  return $ Palette { colors = cols, metadata = md }
+  endOfLine
+  metadata <- (try metadataLine) `sepEndBy` endOfLine 
+  optional $ (try commentLine) `sepEndBy` endOfLine
+  colors <- try $ colorLine `sepEndBy1` endOfLine
+  return Palette {..}
 
 -- | A hex color list palette parser.
 hexList :: Parser Palette
@@ -111,5 +109,5 @@ hexList = do
   return Palette { colors = colors, metadata = [] }
 
 -- | A convenience function to parse a .gpl palette from a file.
-parseGPLFile :: FilePath -> IO (Either ParseError Palette)
-parseGPLFile = parseFromFile palette
+parseFile :: FilePath -> IO (Either ParseError Palette)
+parseFile = parseFromFile (gpl <|> hexList) 
