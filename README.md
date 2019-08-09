@@ -9,6 +9,8 @@ It also features a primitive command language for modifying the hue, saturation 
 
 # Demonstration
 
+![](meta/calico.gif)
+
 # Bash, Fish and Zsh completion
 Thanks to `optparse-applicative`, calico can automatically generate completion scripts for various shells.
 Instructions can be found [here](https://github.com/pcapriotti/optparse-applicative#bash-zsh-and-fish-completions) and require minimal effort on the user's part.
