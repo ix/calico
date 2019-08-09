@@ -65,7 +65,7 @@ commentLine :: Parser ()
 commentLine = do
   skipMany whitespace
   char '#'
-  many (alphaNum <|> whitespace)
+  many $ noneOf "\n\r"
   return ()
 
 -- | A metadata key/value line.
@@ -105,7 +105,7 @@ gpl = do
 -- | A hex color list palette parser.
 hexList :: Parser Palette
 hexList = do
-  colors <- try $ hexColor `sepEndBy1` endOfLine 
+  colors <- try $ hexColor `sepEndBy1` (endOfLine <|> oneOf ", ;")
   return Palette { colors = colors, metadata = [] }
 
 -- | A convenience function to parse a .gpl palette from a file.
