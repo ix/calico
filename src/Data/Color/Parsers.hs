@@ -33,7 +33,7 @@ hexWord8 :: Parser Word8
 hexWord8 = do
   a <- hexDigit
   b <- hexDigit
-  return $ fst . head $ readHex [a, b]
+  pure $ fst . head $ readHex [a, b]
 
 -- | A hex color. Doesn't support single character color components.
 hexColor :: Parser Entry
@@ -42,7 +42,7 @@ hexColor = do
   r <- hexWord8
   g <- hexWord8
   b <- hexWord8
-  return Entry { color = RGB r g b, name = Nothing }
+  pure Entry { color = RGB r g b, name = Nothing }
 
 -- | A number, or >= 1 digit sequentially.
 number :: Parser Integer
@@ -57,7 +57,7 @@ signedNumber :: Parser Integer
 signedNumber = do
   s <- sign
   num <- number
-  return $ case s of
+  pure $ case s of
     '+' -> num
     '-' -> -num
 
@@ -71,14 +71,14 @@ commentLine = do
   skipMany whitespace
   char '#'
   many $ noneOf "\n\r"
-  return ()
+  pure ()
 
 -- | A metadata key/value line.
 metadataLine :: Parser (String, String)
 metadataLine = do
   key   <- manyTill anyChar (char ':')
   value <- manyTill anyChar endOfLine
-  return (key, value)
+  pure (key, value)
 
 -- | A color entry.
 colorLine :: Parser Entry
@@ -95,7 +95,7 @@ colorLine = do
     number
     skipMany whitespace
   name <- many1 (alphaNum <|> whitespace)
-  return $ Entry { color = RGB r g b, name = Just name }
+  pure $ Entry { color = RGB r g b, name = Just name }
 
 -- | A .gpl palette parser.
 gpl :: Parser Palette
@@ -105,13 +105,13 @@ gpl = do
   metadata <- (try metadataLine) `sepEndBy` endOfLine
   optional $ (try commentLine) `sepEndBy` endOfLine
   colors <- try $ colorLine `sepEndBy1` endOfLine
-  return Palette {..}
+  pure Palette {..}
 
 -- | A hex color list palette parser.
 hexList :: Parser Palette
 hexList = do
   colors <- try $ hexColor `sepEndBy1` (endOfLine <|> oneOf ", ;")
-  return Palette { colors = colors, metadata = [] }
+  pure Palette { colors = colors, metadata = [] }
 
 -- | A convenience function to parse a .gpl palette from a file.
 parseFile :: FilePath -> IO (Either ParseError Palette)
