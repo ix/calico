@@ -20,23 +20,23 @@ import qualified Options.Applicative as O
 
 -- | The command line option state used by optparse-applicative.
 data Options = Options
-    { filename    :: String
-    , inline      :: Bool
-    , list        :: Bool
-    , grid        :: Bool
-    , hex         :: Bool
-    , fmt         :: String
-    , gridColumns :: Int
-    , gridSize    :: Int
-    , commands    :: String
-    }
-    deriving (Read, Show)
+  { filename    :: String
+  , inline      :: Bool
+  , list        :: Bool
+  , grid        :: Bool
+  , hex         :: Bool
+  , fmt         :: String
+  , gridColumns :: Int
+  , gridSize    :: Int
+  , commands    :: String
+  }
+  deriving (Read, Show)
 
 -- | A datatype representing commands in the Calico command language.
 data Command = Hue Integer
-    | Saturation Integer
-    | Luminosity Integer
-    deriving (Read, Show, Eq)
+  | Saturation Integer
+  | Luminosity Integer
+  deriving (Read, Show, Eq)
 
 -- | Any valid separator character of space, semicolon, EOL or comma.
 seperator :: Parser Char
