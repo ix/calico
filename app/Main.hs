@@ -3,35 +3,40 @@
 {-# LANGUAGE RecordWildCards #-}
 module Main where
 
-import           Control.Monad
-import           Data.Color
-import           Data.Color.Parsers
-import           Data.Either                    ( fromRight )
-import           Data.List
-import           Data.Semigroup                 ( (<>) )
-import qualified Options.Applicative           as O
-import           System.Environment             ( getArgs )
-import           Text.Parsec
-import           Text.Parsec.Char
-import           Text.Parsec.String
-import           Data.Maybe
-import           Text.Printf
+import Control.Monad      (forM_)
+import Data.Either        (fromRight)
+import Data.Maybe         (fromMaybe)
+import Data.Semigroup     ((<>))
+import System.Environment (getArgs)
+import Text.Parsec        (parse, sepBy, try, (<|>))
+import Text.Parsec.Char   (char, endOfLine, string)
+import Text.Parsec.String (Parser)
+import Text.Printf        (printf)
+
+import Data.Color
+import Data.Color.Parsers
+
+import qualified Options.Applicative as O
 
 -- | The command line option state used by optparse-applicative.
-data Options = Options { filename    :: String
-                       , inline      :: Bool
-                       , list        :: Bool
-                       , grid        :: Bool
-                       , hex         :: Bool
-                       , fmt         :: String
-                       , gridColumns :: Int
-                       , gridSize    :: Int
-                       , commands    :: String }
-               deriving (Read, Show)
+data Options = Options
+    { filename    :: String
+    , inline      :: Bool
+    , list        :: Bool
+    , grid        :: Bool
+    , hex         :: Bool
+    , fmt         :: String
+    , gridColumns :: Int
+    , gridSize    :: Int
+    , commands    :: String
+    }
+    deriving (Read, Show)
 
 -- | A datatype representing commands in the Calico command language.
-data Command = Hue Integer | Saturation Integer | Luminosity Integer
-  deriving (Read, Show, Eq)
+data Command = Hue Integer
+    | Saturation Integer
+    | Luminosity Integer
+    deriving (Read, Show, Eq)
 
 -- | Any valid separator character of space, semicolon, EOL or comma.
 seperator :: Parser Char
@@ -97,7 +102,7 @@ opts = do
 for :: [a] -> (a -> b) -> [b]
 for = flip map
 
--- | Apply a series of commands to all colors in a palette. 
+-- | Apply a series of commands to all colors in a palette.
 transform :: [Command] -> Palette -> Palette
 transform cmds palette = Palette { metadata = metadata palette, colors = newColors }
   where newColors = for (colors palette) $ \(Entry rgb n) -> Entry (foldr modify rgb cmds) n
