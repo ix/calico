@@ -51,7 +51,7 @@ command :: Parser Command
 command = do
   num <- signedNumber
   var <- variable
-  return $ case var of
+  pure $ case var of
     "hue" -> Hue num
     "sat" -> Saturation num
     "lum" -> Luminosity num
@@ -63,14 +63,14 @@ main = do
                     | otherwise               -> parseFile (filename options)
 
   cmds <- if null $ commands options
-          then return []
+          then pure []
           else
             let c = parse (command `sepBy` seperator) "commands" (commands options) in
-              return $ fromRight [] c
+              pure $ fromRight [] c
 
   preparedPalette <- if null $ commands options
-                     then return parseResult
-                     else return $ transform cmds <$> parseResult
+                     then pure parseResult
+                     else pure $ transform cmds <$> parseResult
 
   case preparedPalette of
     Right palette ->
@@ -120,7 +120,7 @@ modify cmd rgb =
 displayX :: Color a => Int -> a -> String
 displayX n clr = prints clr $ concat $ replicate n "██"
 
--- | Convenience function for displayX that returns a single square.
+-- | Convenience function for displayX that pures a single square.
 display :: Color a => a -> String
 display = displayX 1
 
