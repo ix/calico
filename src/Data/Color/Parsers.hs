@@ -1,23 +1,28 @@
 {-# LANGUAGE RecordWildCards #-}
 module Data.Color.Parsers where
 
-import           Control.Monad.IO.Class
-import           Data.Color
-import           Text.Parsec
-import           Text.Parsec.Char
-import           Data.Word
-import           Numeric                        ( readHex )
-import           Text.Parsec.String
+import Data.Color         (RGB (..))
+import Data.Word          (Word8)
+import Numeric            (readHex)
+import Text.Parsec
+    (ParseError, many, many1, manyTill, optional, sepEndBy, sepEndBy1, skipMany, try, (<|>))
+import Text.Parsec.Char
+    (alphaNum, anyChar, char, digit, endOfLine, hexDigit, noneOf, oneOf, string, tab)
+import Text.Parsec.String (Parser, parseFromFile)
 
 -- A generic color type with an optional name.
-data Entry = Entry { color :: RGB
-                   , name  :: Maybe String }
-                   deriving (Read, Show, Eq)
+data Entry = Entry
+  { color :: RGB
+  , name  :: Maybe String
+  }
+  deriving (Read, Show, Eq)
 
 -- | Representation of a .gpl file - a collection of colors and metadata.
-data Palette = Palette { colors   :: [Entry]
-                       , metadata :: [(String, String)] }
-                       deriving (Read, Show, Eq)
+data Palette = Palette
+  { colors   :: [Entry]
+  , metadata :: [(String, String)]
+  }
+  deriving (Read, Show, Eq)
 
 -- | Parser for the .gpl header constant.
 header :: Parser String
@@ -26,7 +31,7 @@ header = string "GIMP Palette"
 -- | A pair of hex digits (e.g. FF).
 hexWord8 :: Parser Word8
 hexWord8 = do
-  a <- hexDigit  
+  a <- hexDigit
   b <- hexDigit
   return $ fst . head $ readHex [a, b]
 
@@ -40,7 +45,7 @@ hexColor = do
   return Entry { color = RGB r g b, name = Nothing }
 
 -- | A number, or >= 1 digit sequentially.
-number :: Parser Integer 
+number :: Parser Integer
 number = read <$> many1 digit
 
 -- | A sign for use in a signed integer.
@@ -51,7 +56,7 @@ sign = char '-' <|> char '+'
 signedNumber :: Parser Integer
 signedNumber = do
   s <- sign
-  num <- number 
+  num <- number
   return $ case s of
     '+' -> num
     '-' -> -num
@@ -76,7 +81,7 @@ metadataLine = do
   return (key, value)
 
 -- | A color entry.
-colorLine :: Parser Entry 
+colorLine :: Parser Entry
 colorLine = do
   skipMany whitespace
   r <- fromIntegral <$> number
@@ -97,7 +102,7 @@ gpl :: Parser Palette
 gpl = do
   header
   endOfLine
-  metadata <- (try metadataLine) `sepEndBy` endOfLine 
+  metadata <- (try metadataLine) `sepEndBy` endOfLine
   optional $ (try commentLine) `sepEndBy` endOfLine
   colors <- try $ colorLine `sepEndBy1` endOfLine
   return Palette {..}
@@ -110,4 +115,4 @@ hexList = do
 
 -- | A convenience function to parse a .gpl palette from a file.
 parseFile :: FilePath -> IO (Either ParseError Palette)
-parseFile = parseFromFile (gpl <|> hexList) 
+parseFile = parseFromFile (gpl <|> hexList)

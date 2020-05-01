@@ -1,9 +1,9 @@
 module Data.Color where
 
-import           Data.Char   (chr, ord)
-import           Data.Fixed
-import           Data.Word
-import           Text.Printf
+import Data.Char   (chr, ord)
+import Data.Fixed  (mod')
+import Data.Word   (Word8)
+import Text.Printf (printf)
 
 -- | An RGB (Red, Green, Blue) representation of a color.
 data RGB = RGB Word8 Word8 Word8
