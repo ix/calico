@@ -1,8 +1,8 @@
 module Parsers.Common where
 
-import Data.Color         (RGB)
-import Text.Parsec        (char, digit, many1, (<|>), unexpected)
-import Text.Parsec.String (Parser)
+import Control.Applicative              ((<|>))
+import Data.Attoparsec.ByteString.Char8 (Parser, char, digit, many1, sepBy, sepBy1, isAlpha_ascii, satisfy)
+import Data.Color                       (RGB)
 
 -- | A generic color type with an optional name.
 data Entry = Entry
@@ -34,4 +34,28 @@ signedNumber = do
   case s of
     '+' -> pure num
     '-' -> pure $ -num
-    _   -> unexpected "lack of sign"
+    _   -> fail "lack of sign"
+
+alphaNum :: Parser Char
+alphaNum = satisfy isAlpha_ascii <|> digit
+
+oneOf :: [Char] -> Parser Char
+oneOf = satisfy . flip elem
+
+noneOf :: [Char] -> Parser Char
+noneOf xs = satisfy (not . (`elem` xs))
+
+tab :: Parser Char
+tab = char '\t'
+
+sepEndBy :: Parser a -> Parser b -> Parser [a]
+sepEndBy thing sep = do
+  results <- thing `sepBy` sep
+  sep
+  pure results
+
+sepEndBy1 :: Parser a -> Parser b -> Parser [a]
+sepEndBy1 thing sep = do
+  results <- thing `sepBy1` sep
+  sep
+  pure results

@@ -1,15 +1,17 @@
 {-# LANGUAGE ApplicativeDo   #-}
 {-# LANGUAGE MultiWayIf      #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
-import Control.Monad      (forM_)
+import Control.Monad      (forM_, void)
+import Control.Applicative ((<|>))
 import Data.Either        (fromRight)
 import Data.Maybe         (fromMaybe)
 import Data.Semigroup     ((<>))
-import Text.Parsec        (parse, sepBy, try, unexpected, (<|>))
-import Text.Parsec.Char   (char, endOfLine, string)
-import Text.Parsec.String (Parser)
+import Data.Attoparsec.ByteString.Char8 (Parser, parseOnly, string, sepBy, try, char, endOfLine)
+import Data.ByteString.Char8 (ByteString)
 import Text.Printf        (printf)
 
 import Data.Color
@@ -17,6 +19,7 @@ import Parsers        (parseFile, parseString)
 import Parsers.Common (Entry (..), Palette (..), signedNumber)
 
 import qualified Options.Applicative as O
+import qualified Data.ByteString.Char8 as BS
 
 -- | The command line option state used by optparse-applicative.
 data Options = Options
@@ -28,7 +31,7 @@ data Options = Options
   , fmt         :: String
   , gridColumns :: Int
   , gridSize    :: Int
-  , commands    :: String
+  , commands    :: ByteString
   }
   deriving (Read, Show)
 
@@ -39,11 +42,11 @@ data Command = Hue Integer
   deriving (Read, Show, Eq)
 
 -- | Any valid separator character of space, semicolon, EOL or comma.
-seperator :: Parser Char
-seperator = char ' ' <|> char ';' <|> char ',' <|> endOfLine
+seperator :: Parser ()
+seperator = void (char ' ') <|> void (char ';') <|> void (char ',') <|> endOfLine
 
 -- | The strings hue, sat or lum.
-variable :: Parser String
+variable :: Parser ByteString
 variable = try (string "hue") <|> try (string "sat") <|> try (string "lum")
 
 -- | A full Command in the string representation.
@@ -55,21 +58,21 @@ command = do
     "hue" -> pure $ Hue num
     "sat" -> pure $ Saturation num
     "lum" -> pure $ Luminosity num
-    _     -> unexpected "command"
+    _     -> fail "couldn't parse command"
 
 main :: IO ()
 main = do
   options <- O.execParser (O.info (O.helper <*> opts) O.idm)
-  parseResult <- if | filename options == "-" -> parseString "stdin" <$> getContents
+  parseResult <- if | filename options == "-" -> parseString <$> BS.getContents
                     | otherwise               -> parseFile (filename options)
 
-  cmds <- if null $ commands options
+  cmds <- if BS.null $ commands options
           then pure []
           else
-            let c = parse (command `sepBy` seperator) "commands" (commands options) in
+            let c = parseOnly (command `sepBy` seperator) (commands options) in
               pure $ fromRight [] c
 
-  preparedPalette <- if null $ commands options
+  preparedPalette <- if BS.null $ commands options
                      then pure parseResult
                      else pure $ transform cmds <$> parseResult
 
@@ -96,7 +99,7 @@ opts = do
   fmt    <- O.strOption (O.short 'f' <> O.long "format" <> O.value "cnrhx" <> O.help "the format string for --list")
   gridColumns <- O.option O.auto (O.short 'n' <> O.long "grid-columns" <> O.value 5 <> O.help "the number of color columns to use with --grid")
   gridSize <- O.option O.auto (O.short 's' <> O.long "grid-size" <> O.value 2 <> O.help "the size of individual colors to use with --grid")
-  commands <- O.strOption (O.short 'm' <> O.long "modify" <> O.value "" <> O.help "a list of color modification commands")
+  commands <- BS.pack <$> O.strOption (O.short 'm' <> O.long "modify" <> O.value "" <> O.help "a list of color modification commands")
   pure Options {..}
 
 -- | It's just map flipped™️.
