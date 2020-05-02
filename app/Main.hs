@@ -8,7 +8,7 @@ module Main where
 import Control.Applicative              ((<|>))
 import Control.Monad                    (forM_, void)
 import Data.Attoparsec.ByteString.Char8
-  (Parser, char, endOfLine, parseOnly, sepBy, string, try)
+  (Parser, char, endOfLine, parseOnly, sepBy, string)
 import Data.ByteString.Char8            (ByteString)
 import Data.Either                      (fromRight)
 import Data.Maybe                       (fromMaybe)
@@ -48,7 +48,7 @@ seperator = void (char ' ') <|> void (char ';') <|> void (char ',') <|> endOfLin
 
 -- | The strings hue, sat or lum.
 variable :: Parser ByteString
-variable = try (string "hue") <|> try (string "sat") <|> try (string "lum")
+variable = string "hue" <|> string "sat" <|> string "lum"
 
 -- | A full Command in the string representation.
 command :: Parser Command
