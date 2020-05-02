@@ -1,7 +1,8 @@
 module Parsers.Common where
 
 import Control.Applicative              ((<|>))
-import Data.Attoparsec.ByteString.Char8 (Parser, char, digit, many1, sepBy, sepBy1, isAlpha_ascii, satisfy)
+import Data.Attoparsec.ByteString.Char8
+  (Parser, char, digit, isAlpha_ascii, many', many1, satisfy, sepBy, sepBy1)
 import Data.Color                       (RGB)
 
 -- | A generic color type with an optional name.
@@ -51,11 +52,11 @@ tab = char '\t'
 sepEndBy :: Parser a -> Parser b -> Parser [a]
 sepEndBy thing sep = do
   results <- thing `sepBy` sep
-  sep
+  many' sep
   pure results
 
 sepEndBy1 :: Parser a -> Parser b -> Parser [a]
 sepEndBy1 thing sep = do
   results <- thing `sepBy1` sep
-  sep
+  many' sep
   pure results
