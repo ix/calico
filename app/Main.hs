@@ -7,14 +7,14 @@ import Control.Monad      (forM_)
 import Data.Either        (fromRight)
 import Data.Maybe         (fromMaybe)
 import Data.Semigroup     ((<>))
-import System.Environment (getArgs)
-import Text.Parsec        (parse, sepBy, try, (<|>))
+import Text.Parsec        (parse, sepBy, try, unexpected, (<|>))
 import Text.Parsec.Char   (char, endOfLine, string)
 import Text.Parsec.String (Parser)
 import Text.Printf        (printf)
 
 import Data.Color
-import Data.Color.Parsers
+import Parsers        (parseFile, parseString)
+import Parsers.Common (Entry (..), Palette (..), signedNumber)
 
 import qualified Options.Applicative as O
 
@@ -51,15 +51,16 @@ command :: Parser Command
 command = do
   num <- signedNumber
   var <- variable
-  pure $ case var of
-    "hue" -> Hue num
-    "sat" -> Saturation num
-    "lum" -> Luminosity num
+  case var of
+    "hue" -> pure $ Hue num
+    "sat" -> pure $ Saturation num
+    "lum" -> pure $ Luminosity num
+    _     -> unexpected "command"
 
 main :: IO ()
 main = do
   options <- O.execParser (O.info (O.helper <*> opts) O.idm)
-  parseResult <- if | filename options == "-" -> parse (gpl <|> hexList) "stdin" <$> getContents
+  parseResult <- if | filename options == "-" -> parseString "stdin" <$> getContents
                     | otherwise               -> parseFile (filename options)
 
   cmds <- if null $ commands options
@@ -139,18 +140,18 @@ printGrid count size palette =
 -- | Print the colors in a palette in a formatted list.
 printFormatted :: Palette -> String -> IO ()
 printFormatted palette fmt =
-  forM_ (colors palette) $ \col@(Entry c n) ->
-  putStrLn $ unwords $ map (formatter col) fmt
+  forM_ (colors palette) $ \col ->
+    putStrLn $ unwords $ map (formatter col) fmt
   where
     formatter col 'c' = display (color col)
     formatter col 'n' = fromMaybe "Untitled" (name col)
     formatter col 'r' = show $ color col
     formatter col 'h' = show $ rgb2hsl $ color col
     formatter col 'x' = toHex $ color col
-    formatter col _   = ""
+    formatter _ _     = ""
 
 -- | Split a list into chunks.
 chunksOf :: Int -> [a] -> [[a]]
 chunksOf = go []
-  where go accum n [] = reverse accum
+  where go accum _ [] = reverse accum
         go accum n xs = go (take n xs : accum) n (drop n xs)
