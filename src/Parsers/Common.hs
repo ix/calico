@@ -2,7 +2,7 @@ module Parsers.Common where
 
 import Control.Applicative              ((<|>))
 import Data.Attoparsec.ByteString.Char8
-  (Parser, char, digit, isAlpha_ascii, many', many1, satisfy, sepBy, sepBy1)
+  (Parser, char, digit, isAlpha_ascii, many', many1, satisfy, sepBy, sepBy1, signed)
 import Data.Color                       (RGB)
 
 -- | A generic color type with an optional name.
@@ -19,24 +19,14 @@ data Palette = Palette
   }
   deriving (Read, Show, Eq)
 
--- | A sign for use in a signed integer.
-sign :: Parser Char
-sign = char '-' <|> char '+'
-
 -- | A number, or >= 1 digit sequentially.
 number :: Parser Integer
 number = read <$> many1 digit
 
--- | A signed integer, with a mandatory +.
+-- | A signed number.
 signedNumber :: Parser Integer
-signedNumber = do
-  s <- sign
-  num <- number
-  case s of
-    '+' -> pure num
-    '-' -> pure $ -num
-    _   -> fail "lack of sign"
-
+signedNumber = signed number
+  
 alphaNum :: Parser Char
 alphaNum = satisfy isAlpha_ascii <|> digit
 
