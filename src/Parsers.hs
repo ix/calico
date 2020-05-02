@@ -1,12 +1,12 @@
 module Parsers (parseFile, parseString) where
 
-import Control.Applicative ((<|>))
-import Control.Monad      ((>=>))
-import Parsers.Common     (Palette)
-import Parsers.GPL        (gpl)
-import Parsers.Hex        (hexList)
+import Control.Applicative              ((<|>))
+import Control.Monad                    ((>=>))
 import Data.Attoparsec.ByteString.Char8 (parseOnly)
-import Data.ByteString.Char8 (ByteString)
+import Data.ByteString.Char8            (ByteString)
+import Parsers.Common                   (Palette)
+import Parsers.GPL                      (gpl)
+import Parsers.Hex                      (hexList)
 
 import qualified Data.ByteString.Char8 as BS
 

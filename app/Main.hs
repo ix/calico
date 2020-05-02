@@ -1,25 +1,26 @@
-{-# LANGUAGE ApplicativeDo   #-}
-{-# LANGUAGE MultiWayIf      #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ApplicativeDo     #-}
+{-# LANGUAGE MultiWayIf        #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 module Main where
 
-import Control.Monad      (forM_, void)
-import Control.Applicative ((<|>))
-import Data.Either        (fromRight)
-import Data.Maybe         (fromMaybe)
-import Data.Semigroup     ((<>))
-import Data.Attoparsec.ByteString.Char8 (Parser, parseOnly, string, sepBy, try, char, endOfLine)
-import Data.ByteString.Char8 (ByteString)
-import Text.Printf        (printf)
+import Control.Applicative              ((<|>))
+import Control.Monad                    (forM_, void)
+import Data.Attoparsec.ByteString.Char8
+  (Parser, char, endOfLine, parseOnly, sepBy, string, try)
+import Data.ByteString.Char8            (ByteString)
+import Data.Either                      (fromRight)
+import Data.Maybe                       (fromMaybe)
+import Data.Semigroup                   ((<>))
+import Text.Printf                      (printf)
 
 import Data.Color
 import Parsers        (parseFile, parseString)
 import Parsers.Common (Entry (..), Palette (..), signedNumber)
 
-import qualified Options.Applicative as O
 import qualified Data.ByteString.Char8 as BS
+import qualified Options.Applicative   as O
 
 -- | The command line option state used by optparse-applicative.
 data Options = Options
