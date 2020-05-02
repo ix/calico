@@ -1,14 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Data.Color
-import Data.Either
-import Data.Word
 import Data.Attoparsec.ByteString.Char8 (parseOnly)
-import Parsers
-import Parsers.Common
-import Parsers.GPL
-import Test.Hspec
+import Data.Color
+  (HSL (..), RGB (..), deg, hsl2rgb, rgb2hsl)
+import Data.Either                      (isRight)
+import Data.Word                        (Word64)
+import Parsers.Common                   (number, signedNumber)
+import Parsers.GPL                      (gpl)
+import Test.Hspec                       (describe, hspec, it, shouldBe)
 import Test.QuickCheck
+  (Arbitrary, arbitrary, quickCheck, withMaxSuccess)
 
 import qualified Data.ByteString.Char8 as BS
 
@@ -25,6 +26,7 @@ errorMargin :: Integer
 errorMargin = 3
 
 -- | Tests if two RGB colors are within an acceptable margin of difference.
+(=~) :: RGB -> RGB -> Bool
 (=~) (RGB r g b) (RGB r' g' b') = constrain r r' && constrain g g' && constrain b b'
   where constrain a b = (distance (fromIntegral a) (fromIntegral b)) <= errorMargin
 
