@@ -1,6 +1,6 @@
 module Data.Color where
 
-import Data.Char   (chr, ord)
+import Data.Char   (chr)
 import Data.Fixed  (mod')
 import Data.Word   (Word8)
 import Text.Printf (printf)
@@ -64,6 +64,7 @@ rgb2hsl (RGB red green blue) = HSL (deg $ round hue) (sat * 100) (lum * 100)
           | cMax  == r' = 60.0 * ((g' - b') / delta)
           | cMax  == g' = 60.0 * (2 + (b' - r') / delta)
           | cMax  == b' = 60.0 * (4 + (r' - g') / delta)
+          | otherwise   = 0
         sat
           | delta == 0  = 0
           | otherwise   = delta / (1 - abs (2 * lum - 1))

@@ -1,10 +1,12 @@
-import           Data.Color
-import           Data.Color.Parsers
-import           Data.Either
-import           Data.Word
-import           Test.Hspec
-import           Test.QuickCheck
-import           Text.Parsec
+import Data.Color
+import Data.Either
+import Data.Word
+import Parsers
+import Parsers.Common
+import Parsers.GPL
+import Test.Hspec
+import Test.QuickCheck
+import Text.Parsec
 
 instance Arbitrary RGB where
   arbitrary = do
@@ -46,7 +48,7 @@ prop_parses_signed n
   | n == 0 = doParse "+0" && doParse "-0"
   | n < 0  = doParse $ show n
   | n > 0  = doParse $ concat ["+", show n]
-  where doParse m = 
+  where doParse m =
           case parse signedNumber "" m of
             Right m' -> m' == n
             Left _   -> False
