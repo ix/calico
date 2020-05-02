@@ -1,18 +1,19 @@
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 module Parsers.GPL where
 
-import Data.Color         (RGB (..))
-import Text.Parsec
-    (many, many1, manyTill, optional, sepEndBy, sepEndBy1, skipMany, try, (<|>))
-import Text.Parsec.Char
-    (alphaNum, anyChar, char, endOfLine, noneOf, string, tab)
-import Text.Parsec.String (Parser)
+import Control.Applicative              ((<|>))
+import Data.Attoparsec.ByteString.Char8
+    (Parser, anyChar, char, endOfLine, many', many1, manyTill, sepBy, sepBy1, skipMany, string, try)
+import Data.ByteString.Char8            (ByteString)
+import Data.Color                       (RGB (..))
 
-import Parsers.Common (Entry (..), Palette (..), number)
+import Parsers.Common
+    (Entry (..), Palette (..), alphaNum, noneOf, number, sepEndBy, sepEndBy1, tab)
 
 -- | Parser for the .gpl header constant.
-header :: Parser String
+header :: Parser ByteString
 header = string "GIMP Palette"
 
 -- | A space or tab character.
@@ -24,7 +25,7 @@ commentLine :: Parser ()
 commentLine = do
   skipMany whitespace
   char '#'
-  many $ noneOf "\n\r"
+  many' $ noneOf "\n\r"
   pure ()
 
 -- | A metadata key/value line.
@@ -45,7 +46,7 @@ colorLine = do
   b <- fromIntegral <$> number
   skipMany whitespace
   -- in the case of RGBA
-  optional $ do
+  many' $ do
     number
     skipMany whitespace
   name <- many1 (alphaNum <|> whitespace)
@@ -57,6 +58,6 @@ gpl = do
   header
   endOfLine
   metadata <- (try metadataLine) `sepEndBy` endOfLine
-  optional $ (try commentLine) `sepEndBy` endOfLine
+  many' $ (try commentLine) `sepEndBy` endOfLine
   colors <- try $ colorLine `sepEndBy1` endOfLine
   pure Palette {..}

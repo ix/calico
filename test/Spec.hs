@@ -1,12 +1,16 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 import Data.Color
 import Data.Either
 import Data.Word
+import Data.Attoparsec.ByteString.Char8 (parseOnly)
 import Parsers
 import Parsers.Common
 import Parsers.GPL
 import Test.Hspec
 import Test.QuickCheck
-import Text.Parsec
+
+import qualified Data.ByteString.Char8 as BS
 
 instance Arbitrary RGB where
   arbitrary = do
@@ -38,7 +42,7 @@ prop_hsl_roughly_equivalent color = color =~ (hsl2rgb $ rgb2hsl color)
 -- here because we know negative integers fail and that's appropriate.
 prop_parses_number :: Word64 -> Bool
 prop_parses_number n =
-  case parse number "" (show n) of
+  case parseOnly number (BS.pack $ show n) of
     Right n' -> fromIntegral n' == n
     Left  _  -> False
 
@@ -46,10 +50,10 @@ prop_parses_number n =
 prop_parses_signed :: Integer -> Bool
 prop_parses_signed n
   | n == 0 = doParse "+0" && doParse "-0"
-  | n < 0  = doParse $ show n
-  | n > 0  = doParse $ concat ["+", show n]
+  | n < 0  = doParse $ BS.pack $ show n
+  | n > 0  = doParse $ mconcat ["+", BS.pack $ show n]
   where doParse m =
-          case parse signedNumber "" m of
+          case parseOnly signedNumber m of
             Right m' -> m' == n
             Left _   -> False
 
@@ -71,13 +75,13 @@ main = do
     describe "Data.Color.GPL.gpl" $ do
       it "parses a palette correctly" $ do
         let paldata = "GIMP Palette\n0 0 0 Untitled\n"
-        isRight (parse gpl "Test #1" paldata) `shouldBe` True
+        isRight (parseOnly gpl paldata) `shouldBe` True
       it "ignores comments correctly" $ do
         let paldata = "GIMP Palette\n# Comment\n # Another comment\n0 0 0 Test\n"
-        isRight (parse gpl "Test #2" paldata) `shouldBe` True
+        isRight (parseOnly gpl paldata) `shouldBe` True
       it "parses metadata correctly" $ do
         let paldata = "GIMP Palette\n# Comment\nColors: RGBA\n255 255 255 Untitled\n"
-        isRight (parse gpl "Test #3" paldata) `shouldBe` True
+        isRight (parseOnly gpl paldata) `shouldBe` True
     describe "Data.Color.GPL.signedNumber" $ do
       it "parses mandatorily signed integers correctly" $ do
         quickCheck (withMaxSuccess 10000 prop_parses_signed)

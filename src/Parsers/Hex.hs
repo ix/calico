@@ -2,25 +2,27 @@
 
 module Parsers.Hex (hexList) where
 
-import Data.Color         (RGB (..))
-import Data.Word          (Word8)
-import Numeric            (readHex)
-import Parsers.Common     (Entry (..), Palette (..))
-import Text.Parsec
-    (char, endOfLine, hexDigit, oneOf, optional, sepEndBy1, try, (<|>))
-import Text.Parsec.String (Parser)
+import Control.Applicative              ((<|>))
+import Control.Monad                    (void)
+import Data.Attoparsec.ByteString.Char8
+    (Parser, anyChar, char, char8, endOfLine, many', try)
+import Data.Color                       (RGB (..))
+import Data.Word                        (Word8)
+import Numeric                          (readHex)
+import Parsers.Common
+    (Entry (..), Palette (..), oneOf, sepEndBy1)
 
 -- | A pair of hex digits (e.g. FF).
 hexWord8 :: Parser Word8
 hexWord8 = do
-  a <- hexDigit
-  b <- hexDigit
+  a <- anyChar
+  b <- anyChar
   pure $ fst . head $ readHex [a, b]
 
 -- | A hex color. Doesn't support single character color components.
 hexColor :: Parser Entry
 hexColor = do
-  optional $ char '#'
+  many' $ char '#'
   r <- hexWord8
   g <- hexWord8
   b <- hexWord8
@@ -29,5 +31,5 @@ hexColor = do
 -- | A hex color list palette parser.
 hexList :: Parser Palette
 hexList = do
-  colors <- try $ hexColor `sepEndBy1` (endOfLine <|> oneOf ", ;")
+  colors <- try $ hexColor `sepEndBy1` (endOfLine <|> void (oneOf ", ;"))
   pure Palette { colors, metadata = [] }
