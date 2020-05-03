@@ -2,6 +2,7 @@
 
 module Parsers.Hex (hexList) where
 
+import Safe
 import Control.Applicative              ((<|>))
 import Control.Monad                    (void)
 import Data.Attoparsec.ByteString.Char8
@@ -17,7 +18,7 @@ hexWord8 :: Parser Word8
 hexWord8 = do
   a <- anyChar
   b <- anyChar
-  pure $ fst . head $ readHex [a, b]
+  maybe (fail "Couldn't read hex value.") (pure . fst) $ headMay $ readHex [a, b]
 
 -- | A hex color. Doesn't support single character color components.
 hexColor :: Parser Entry

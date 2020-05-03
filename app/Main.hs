@@ -73,9 +73,8 @@ main = do
             let c = parseOnly (command `sepBy` seperator) (commands options) in
               pure $ fromRight [] c
 
-  preparedPalette <- if BS.null $ commands options
-                     then pure parseResult
-                     else pure $ transform cmds <$> parseResult
+  preparedPalette <- pure $
+    if BS.null $ commands options then parseResult else transform cmds <$> parseResult
 
   case preparedPalette of
     Right palette ->
@@ -84,9 +83,7 @@ main = do
          | grid options   -> printGrid (gridColumns options) (gridSize options) palette
          | hex options    -> printFormatted palette "x"
          | otherwise      -> printFormatted palette (fmt options)
-    Left err -> do
-      putStrLn "Couldn't parse the palette!"
-      print err
+    Left err -> putStrLn err
 
 
 -- | optparse-applicative option parser.
