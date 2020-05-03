@@ -3,13 +3,14 @@
 module Parsers.Common where
 
 import Control.Applicative              ((<|>))
-import Data.ByteString (ByteString, unpack)
 import Data.Attoparsec.ByteString.Char8
-  (Parser, char, digit, isAlpha_ascii, many', many1, satisfy, sepBy, sepBy1, signed)
+    (Parser, char, digit, isAlpha_ascii, many', many1, satisfy, sepBy, sepBy1,
+    signed)
+import Data.Bits                        (shiftL, (.|.))
+import Data.ByteString                  (ByteString, unpack)
 import Data.Color                       (RGB)
-import Data.Word (Word16, Word32)
-import Data.Function ((&))
-import Data.Bits (shiftL, (.|.))
+import Data.Function                    ((&))
+import Data.Word                        (Word16, Word32)
 
 -- | A generic color type with an optional name.
 data Entry = Entry
@@ -32,7 +33,7 @@ number = read <$> many1 digit
 -- | A signed number.
 signedNumber :: Parser Integer
 signedNumber = signed number
-  
+
 alphaNum :: Parser Char
 alphaNum = satisfy isAlpha_ascii <|> digit
 
@@ -74,5 +75,5 @@ instance Transmute Word32 where
       .|. (fromIntegral x `shiftL`  8)
       .|. fromIntegral y & Just
     _ -> Nothing
-      
-                 
+
+

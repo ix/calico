@@ -2,7 +2,6 @@
 
 module Parsers.Hex (hexList) where
 
-import Safe
 import Control.Applicative              ((<|>))
 import Control.Monad                    (void)
 import Data.Attoparsec.ByteString.Char8
@@ -12,6 +11,7 @@ import Data.Word                        (Word8)
 import Numeric                          (readHex)
 import Parsers.Common
     (Entry (..), Palette (..), oneOf, sepEndBy1)
+import Safe
 
 -- | A pair of hex digits (e.g. FF).
 hexWord8 :: Parser Word8

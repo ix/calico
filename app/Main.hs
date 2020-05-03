@@ -8,9 +8,8 @@ module Main where
 import Control.Applicative              ((<|>))
 import Control.Monad                    (forM_, void)
 import Data.Attoparsec.ByteString.Char8
-  (Parser, char, endOfLine, parseOnly, sepBy, string)
+    (Parser, char, endOfLine, parseOnly, sepBy, string)
 import Data.ByteString.Char8            (ByteString)
-import Data.Either                      (fromRight)
 import Data.Maybe                       (fromMaybe)
 import Data.Semigroup                   ((<>))
 import Text.Printf                      (printf)
@@ -67,14 +66,10 @@ main = do
   parseResult <- if | filename options == "-" -> parseString <$> BS.getContents
                     | otherwise               -> parseFile (filename options)
 
-  cmds <- if BS.null $ commands options
-          then pure []
-          else
-            let c = parseOnly (command `sepBy` seperator) (commands options) in
-              pure $ fromRight [] c
-
   preparedPalette <- pure $
-    if BS.null $ commands options then parseResult else transform cmds <$> parseResult
+    if BS.null $ commands options then parseResult else do
+      cmds <- parseOnly (command `sepBy` seperator) $ commands options
+      transform cmds <$> parseResult
 
   case preparedPalette of
     Right palette ->
