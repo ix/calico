@@ -1,7 +1,7 @@
 # Calico :cat2:
 Calico is a small utility written in Haskell which is `cat` but for colors.
 
-It accepts input in the form of delimited hex colors or the GPL palette format.
+It accepts input in the form of an Aseprite palette, a GPL palette, or delimited hex colors.
 
 Its output is highly configurable, and it is able to convert between RGB and HSL.
 
