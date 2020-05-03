@@ -1,9 +1,15 @@
+{-# LANGUAGE NumericUnderscores #-}
+
 module Parsers.Common where
 
 import Control.Applicative              ((<|>))
+import Data.ByteString (ByteString, unpack)
 import Data.Attoparsec.ByteString.Char8
   (Parser, char, digit, isAlpha_ascii, many', many1, satisfy, sepBy, sepBy1, signed)
 import Data.Color                       (RGB)
+import Data.Word (Word16, Word32)
+import Data.Function ((&))
+import Data.Bits (shiftL, (.|.))
 
 -- | A generic color type with an optional name.
 data Entry = Entry
@@ -50,3 +56,23 @@ sepEndBy1 thing sep = do
   results <- thing `sepBy1` sep
   many' sep
   pure results
+
+-- | A class for attempted interpretation of ByteStrings.
+class Transmute a where
+  transmute :: ByteString -> (Maybe a)
+
+instance Transmute Word16 where
+  transmute ws = case unpack ws of
+    [x, y] -> 0x0000 .|. (fromIntegral x `shiftL` 8) .|. fromIntegral y & Just
+    _      -> Nothing
+
+instance Transmute Word32 where
+  transmute ws = case unpack ws of
+    [v, w, x, y] -> 0x0000_0000
+      .|. (fromIntegral v `shiftL` 24)
+      .|. (fromIntegral w `shiftL` 16)
+      .|. (fromIntegral x `shiftL`  8)
+      .|. fromIntegral y & Just
+    _ -> Nothing
+      
+                 
