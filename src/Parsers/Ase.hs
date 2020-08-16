@@ -2,13 +2,13 @@
 
 module Parsers.Ase (ase) where
 
-import Control.Monad              (void, when)
+import Control.Monad              (void)
 import Data.Attoparsec.ByteString (Parser, many', parseOnly, word8)
 import Data.ByteString            (ByteString)
 import Data.Color                 (RGB (..))
 import Data.Function              ((&))
 import Data.Maybe                 (fromMaybe)
-import Data.Word                  (Word16, Word32, Word8)
+import Data.Word                  (Word16, Word32)
 import Parsers.Common             (Entry (..), Palette (..), transmute)
 import Safe                       (headMay)
 
@@ -71,5 +71,5 @@ ase = do
   chunk' <- headMay <$> filter isPaletteType <$> many' chunk
   case chunk' of
     Nothing    -> fail "No palette chunk found, possible this is not an Aseprite *palette* file."
-    Just chunk -> parseOnly palette (cData chunk) &
-      either (fail "Failed to parse palette chunk!") pure
+    Just chunk'' -> parseOnly palette (cData chunk'') &
+      either (const $ fail "Failed to parse palette chunk!") pure

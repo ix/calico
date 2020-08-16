@@ -11,7 +11,6 @@ import Data.Attoparsec.ByteString.Char8
     (Parser, char, endOfLine, parseOnly, sepBy, string)
 import Data.ByteString.Char8            (ByteString)
 import Data.Maybe                       (fromMaybe)
-import Data.Semigroup                   ((<>))
 import Text.Printf                      (printf)
 
 import Data.Color
