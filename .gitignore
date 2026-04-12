@@ -1,4 +1,12 @@
-.stack-work/
-calico.cabal
-*~
-TAGS
+.build-cache
+.cache
+.direnv/
+.ghcid
+*.dylib
+*.dyn_hi
+*.dyn_o
+*.hi
+*.o
+dist*
+dist/
+.DS_Store

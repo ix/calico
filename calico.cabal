@@ -1,0 +1,74 @@
+cabal-version:   3.8
+name:            calico
+version:         3.1.0
+
+synopsis: A utility for parsing and displaying color palettes.
+description: A utility for parsing and displaying color palettes.
+
+license:         MIT
+license-file:    LICENSE
+author:          ix
+maintainer:      ix
+
+build-type:      Simple
+
+common ghc-flags
+  ghc-options: -Wall -Wunused-imports -Wunused-packages -O2
+
+common extensions
+  default-extensions:
+    BinaryLiterals
+    DerivingVia
+    ImportQualifiedPost
+    InstanceSigs
+    LambdaCase
+    OverloadedStrings
+    PatternSynonyms
+    RecordWildCards
+    ScopedTypeVariables
+    StrictData
+    TupleSections
+    ViewPatterns
+
+library
+  import: ghc-flags, extensions
+  build-depends:
+    , attoparsec
+    , base
+    , bytestring
+    , safe
+  hs-source-dirs: src
+  exposed-modules:
+    Data.Color
+    Parsers
+    Parsers.Ase
+    Parsers.Common
+    Parsers.GPL
+    Parsers.Hex
+  default-language: Haskell2010
+
+executable calico
+  import: ghc-flags, extensions
+  main-is: Main.hs
+  build-depends:
+    , attoparsec
+    , base
+    , bytestring
+    , calico
+    , optparse-applicative
+    , safe
+  hs-source-dirs: exe
+  default-language: Haskell2010
+
+test-suite tests
+  import: ghc-flags, extensions
+  type: exitcode-stdio-1.0
+  main-is: test.hs
+  hs-source-dirs: tests
+  build-depends:
+    , attoparsec
+    , base
+    , bytestring
+    , calico
+    , hspec
+    , QuickCheck

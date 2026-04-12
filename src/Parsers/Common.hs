@@ -75,5 +75,3 @@ instance Transmute Word32 where
       .|. (fromIntegral x `shiftL`  8)
       .|. fromIntegral y & Just
     _ -> Nothing
-
-
